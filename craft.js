@@ -25,27 +25,42 @@ const upload = multer({ storage: storage });
 
 mongoose
     .connect(
-        "mongodb+srv://zoelenore:1415Birchave!@assignment15.dg9dui2.mongodb.net/csce242?retryWrites=true&w=majority&appName=assignment15")
-    .then(() => console.log("Connected to mongodb..."))
-    .catch((err) => console.error("could not connect ot mongodb...", err));
+        "mongodb+srv://zoelenore:1415Birchave!@assignment15.dg9dui2.mongodb.net/?retryWrites=true&w=majority&appName=assignment15")
+    .then(() => {
+        console.log("Connected to mongodb...");
+        // Insert crafts into MongoDB collection
+        insertCrafts();
+    })
+    .catch((err) => console.error("could not connect to mongodb...", err));
 
 const craftSchema = new mongoose.Schema({
-    id: String,
     name: String,
     image: String,
     description: String,
     supplies: [String]
 });
 
-const Craft = mongoose.model("crafts", craftSchema);
+const Craft = mongoose.model("Craft", craftSchema);
 
-app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/index.html");
-});
+// Function to insert crafts into MongoDB collection
+async function insertCrafts() {
+    try {
+        // Delete existing crafts
+        await Craft.deleteMany({});
+        // Insert new crafts
+        await Craft.insertMany(crafts);
+        console.log("Crafts inserted successfully");
+        process.exit(); // Exit the program after insertion
+    } catch (error) {
+        console.error("Error inserting crafts:", error);
+        process.exit(1); // Exit the program with error code 1
+    }
+}
+
+
 
 let crafts = [
     {
-        "id": "1",
         "name": "Beaded JellyFish",
         "image": "bead-jellyfish.jpg",
         "description": "Create a hanging jellyfish using eggcartons and multicolored beads",
@@ -55,8 +70,7 @@ let crafts = [
             "beads"
         ]
     },
-    {
-        "id": "2",
+    {     
         "name": "Character Bookmarks",
         "image": "bookmarks.jpeg",
         "description": "Create a little birdy bookmark to always remin you were you were",
@@ -66,8 +80,7 @@ let crafts = [
             "black construction paper"
         ]
     },
-    {
-        "id": "3",
+    {        
         "name": "Button Flowers",
         "image": "button-flowers.jpeg",
         "description": "Create a fun bouquet of flowers with your favorite buttons",
@@ -79,7 +92,6 @@ let crafts = [
         ]
     },
     {
-        "id": "4",
         "name": "Cheerio Necklaces",
         "image": "cheerio-necklace.webp",
         "description": "Create a fun and edible necklace",
@@ -89,7 +101,6 @@ let crafts = [
         ]
     },
     {
-        "id": "5",
         "name": "Cotton Ball Cupcakes",
         "image": "cotton-ball-cupcakes.webp",
         "description": "Decorate your fun filled cupcake however you want.",
@@ -101,7 +112,6 @@ let crafts = [
         ]
     },
     {
-        "id": "6",
         "name": "School Themed Mason Jars",
         "image": "decorated-jars.jpeg",
         "description": "Let's make mason jars to ",
@@ -113,7 +123,6 @@ let crafts = [
         ]
     },
     {
-        "id": "7",
         "name": "Egg Carton Flowers",
         "image": "egg-carton-flowers.jpg",
         "description": "Make a beautiful bouquet with egg cartons and other items you can find around the house",
@@ -126,7 +135,6 @@ let crafts = [
         ]
     },
     {
-        "id": "8",
         "name": "Finger Puppets",
         "image": "finger-puppets.jpeg",
         "description": "These little critters are easy to make, and will entertain your little one while they make a show.",
@@ -137,7 +145,6 @@ let crafts = [
         ]
     },
     {
-        "id": "9",
         "name": "Ribbon Flower Headbands",
         "image": "flower-headbands.jpg",
         "description": "Let your little one show off her new style with these pretty and customizable headbands",
@@ -149,7 +156,6 @@ let crafts = [
         ]
     },
     {
-        "id": "10",
         "name": "Hand Print Fish Puppets",
         "image": "handprint-fish.jpg",
         "description": "We all need to take every opportunity we can to remember those tiny hands, and what better way to do it, then to make fish puppets!",
@@ -161,7 +167,6 @@ let crafts = [
         ]
     },
     {
-        "id": "11",
         "name": "Hand Print Tree",
         "image": "hand-print-tree.jpeg",
         "description": "This is a fun way to get your little one into finger painting.",
@@ -171,7 +176,6 @@ let crafts = [
         ]
     },
     {
-        "id": "12",
         "name": "Melted Bead Bowl",
         "image": "melted-bead-bowl.jpeg",
         "description": "All they need to do is shape their faviorte design, warm it up and they have a brand new bowl.",
@@ -182,7 +186,6 @@ let crafts = [
         ]
     },
     {
-        "id": "13",
         "name": "Monster Kites",
         "image": "monster-rolls.jpg",
         "description": "Let's make those scary toilet paper rolls fly!",
@@ -194,7 +197,6 @@ let crafts = [
         ]
     },
     {
-        "id": "14",
         "name": "Pool Noodle Boats",
         "image": "noodle-boats.png",
         "description": "Let's make a boat that will actually float, due to the floating bottom of a pool noodle.",
@@ -205,7 +207,6 @@ let crafts = [
         ]
     },
     {
-        "id": "15",
         "name": "Paper Plate Bees",
         "image": "paper-plate-bees.jpeg",
         "description": "Let's have fun with making cute little bees, or big bees actually.",
@@ -219,7 +220,6 @@ let crafts = [
         ]
     },
     {
-        "id": "16",
         "name": "Paper Plate Dinosaurs",
         "image": "paper-plate-dinosaurs.jpg",
         "description": "Who would have thought that half a paper plate would be the base of a dinosaur.",
@@ -231,7 +231,6 @@ let crafts = [
         ]
     },
     {
-        "id": "17",
         "name": "Porcupine Leafs",
         "image": "porcupine-leaf.webp",
         "description": "Let's turn an ordinary paper plate into a fun filled mask.",
@@ -243,7 +242,6 @@ let crafts = [
         ]
     },
     {
-        "id": "18",
         "name": "Rainbow Cloud",
         "image": "rainbow-cloud.webp",
         "description": "Some cotton and color and you'll have a beautiful rainbow.",
@@ -254,7 +252,6 @@ let crafts = [
         ]
     },
     {
-        "id": "19",
         "name": "Fun Shaped Crayons",
         "image": "shaped-crayons.jpg",
         "description": "Let's melt some crayons together and let them harden into fun shapes.",
@@ -264,7 +261,6 @@ let crafts = [
         ]
     },
     {
-        "id": "20",
         "name": "Straw Farris Wheel",
         "image": "straw-faris-wheel.jpg",
         "description": "It might be too small to ride, but this farris wheel is the most colorful of all.",
@@ -274,7 +270,6 @@ let crafts = [
         ]
     },
     {
-        "id": "21",
         "name": "Sunny String",
         "image": "sun-string.jpg",
         "description": "Let's practice our fine motor skills while we weave the string into a fun sun.",
@@ -286,7 +281,6 @@ let crafts = [
         ]
     },
     {
-        "id": "22",
         "name": "Tissue Ballerinas",
         "image": "tisue-dancer.jpeg",
         "description": "These beautiful dancers will look great on display",
@@ -297,7 +291,6 @@ let crafts = [
         ]
     },
     {
-        "id": "23",
         "name": "Toilet Paper Roll Animals",
         "image": "toilet-paper-animals.jpeg",
         "description": "These beautiful dancers will look great on display",
@@ -308,7 +301,6 @@ let crafts = [
         ]
     },
     {
-        "id": "24",
         "name": "Toilet Paper Butterfly",
         "image": "toilet-paper-butterfly.jpg",
         "description": "Such a sweat little flyer",
@@ -320,7 +312,6 @@ let crafts = [
         ]
     },
     {
-        "id": "25",
         "name": "Valentines Jar",
         "image": "valentines-jar.webp",
         "description": "So much hearts all in one",
@@ -330,87 +321,4 @@ let crafts = [
         ]
     }];
 
-    //Fetch all the crafts in Mongo and add them to the Array
-    Craft.find({}) // Use find() without a callback
-    .then(documents => {
-        // Iterate over the array of documents
-        documents.forEach(doc => {
-            // Push each document into the 'crafts' array
-            crafts.push({
-                id: doc.id,
-                name: doc.name,
-                image: doc.image,
-                description: doc.description,
-                supplies: doc.supplies
-            });
-        });        
-    })
-    .catch(err => {
-        console.error('DB Error retrieving crafts:', err);
-        // Handle error
-    });
-
-app.post("/api/crafts", upload.single("image"), (req, res) => {
-    const filename = req.file.filename
-    console.log("Recieved POST");
-    console.log(req.body);
-    req.body["image"] = filename;
-    const result = validateCraft(req.body);
-    if (result.error) {
-        res.status(400).send("Improper validation of payload " + result.error.details[0].message);
-        return;
-    }
-
-    const newCraft = {
-        id: crafts.length + 1,
-        name: req.body.name,
-        image: req.body.image,
-        description: req.body.description,
-        supplies: req.body.supplies.split(",")
-    };
-
-    const newCraftDB = new Craft({
-        id: crafts.length + 1,
-        name: req.body.name,
-        image: req.body.image,
-        description: req.body.description,
-        supplies: req.body.supplies.split(",")
-    });
-
-    // Save the new craft document to the database
-    newCraftDB.save()
-        .then(() => {
-            crafts.push(newCraft);
-            res.send(newCraft);
-        })
-        .catch(error => {
-            console.error('DB Error creating craft:', error);
-            res.status(500).send('DB Error creating craft');
-        });
-
-});
-
-
-const validateCraft = (craft) => {
-    const schema = Joi.object({
-        id: Joi.allow(""),
-        name: Joi.string().min(3).required(),
-        image: Joi.string().min(5).required(),
-        description: Joi.string().min(1).required(),
-        supplies: Joi.allow(),
-    });
-    return schema.validate(craft);
-}
-
-app.get("/api/crafts", (req, res) => {
-    console.log("/api/crafts/ called. Returning json");
-    res.json(crafts);
-});
-
-
-
-app.listen(10001, () => {
-    console.log("Listening on port 10001");
-});
-
-
+    insertCrafts();
