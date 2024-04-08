@@ -44,6 +44,7 @@ class Craft {
         return craftProject;
     }
 
+    
     get expandedSection() {
         const craftDetailCard = document.createElement("section");
         const target = "modal-" + this.id
@@ -79,6 +80,11 @@ class Craft {
         const heading = document.createElement("h2");
         heading.classList.add("craft-details-header");
         heading.innerText = this.name;
+
+        const dLink = document.createElement("a");
+        dLink.innerHTML = "	&#9249;";
+        craftDetails.append(dLink);
+        dLink.id = "delete-link";
 
         /* Create the text div and elements */
         const craftDetails = document.createElement("p");
@@ -186,6 +192,7 @@ const initGallery = async () => {
     document.getElementById("add-craft-cancel").onclick = () => { modalClose("add-craft"); };
     document.getElementById("add-supply").onclick = () => { addSupplies(); };
     document.getElementById("add-crafts-form").reset();
+    dLink.onclick = deleteCraft.bind(this, craft);
     document.getElementById("img-prev").src = "";
 
     fileInput.addEventListener('change', function () {
@@ -222,6 +229,25 @@ const addEditCraft = async (e) => {
     document.getElementById("craft-section").innerHTML = "";
     initGallery();
 }
+
+const deleteCraft = async(craft)=> {
+    let response = await fetch(`/api/crafts/${craft._id}`, {
+      method:"DELETE",
+      headers:{
+        "Content-Type":"application/json;charset=utf-8"
+      }
+    });
+  
+    if(response.status != 200){
+      console.log("Error deleting");
+      return;
+    }
+  
+    let result = await response.json();
+    resetForm();
+    showRecipes();
+    document.getElementById("dialog").style.display = "none";
+  };
 
 const getSupplies = () => {
     const inputs = document.querySelectorAll("#supplies-section input");
