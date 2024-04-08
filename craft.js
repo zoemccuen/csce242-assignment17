@@ -25,7 +25,7 @@ const upload = multer({ storage: storage });
 
 mongoose
     .connect(
-        "mongodb+srv://zoelenore:1415Birchave!@assignment15.dg9dui2.mongodb.net/?retryWrites=true&w=majority&appName=assignment15")
+        "mongodb+srv://zoelenore:1415Birchave!@assignment15.dg9dui2.mongodb.net/hw17?retryWrites=true&w=majority&appName=assignment15")
     .then(() => {
         console.log("Connected to mongodb...");
         // Insert crafts into MongoDB collection
@@ -40,7 +40,7 @@ const craftSchema = new mongoose.Schema({
     supplies: [String]
 });
 
-const Craft = mongoose.model("Craft", craftSchema);
+const Craft = mongoose.model("Craft", craftSchema, "crafts");
 
 // Function to insert crafts into MongoDB collection
 async function insertCrafts() {
