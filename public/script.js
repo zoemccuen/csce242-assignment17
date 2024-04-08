@@ -212,7 +212,7 @@ const deleteCraft = (recId) => {
     };
   
     // Send the POST request
-    fetch("/api/delete", options)
+    fetch(url, options)
       .then(response => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
