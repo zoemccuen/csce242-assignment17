@@ -191,6 +191,8 @@ const initGallery = async () => {
     document.getElementById("icon-add").onclick = () => { modalOpen("add-craft"); };
     document.getElementById("add-craft-cancel").onclick = () => { modalClose("add-craft"); };
     document.getElementById("add-supply").onclick = () => { addSupplies(); };
+    document.getElementById("icon-pencil").onclick = () => { editCraft("&#9999"); };
+    document.getElementById("icon-delete").onclick = () => { deleteCraft("&#10005"); };
     document.getElementById("add-crafts-form").reset();
     dLink.onclick = deleteCraft.bind(this, craft);
     document.getElementById("img-prev").src = "";
