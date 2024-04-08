@@ -25,8 +25,7 @@ const upload = multer({ storage: storage });
 
 mongoose
     .connect(
-        "mongodb+srv://zoelenore:1415Birchave!@assignment15.dg9dui2.mongodb.net/hw17?retryWrites=true&w=majority&appName=assignment15")
-    .then(() => console.log("Connected to mongodb..."))
+        "mongodb+srv://zoelenore:1415Birchave!@assignment15.dg9dui2.mongodb.net/hw17?retryWrites=true&w=majority&appName=assignment15")    .then(() => console.log("Connected to mongodb..."))
     .catch((err) => console.error("DB Error: Could not connect to MongoDB.", err));
 
 const craftSchema = new mongoose.Schema({
@@ -37,16 +36,17 @@ const craftSchema = new mongoose.Schema({
     supplies: [String]
 });
 
-const Craft = mongoose.model("crafts", craftSchema);
-
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/index.html");
 });
 
+
+const Craft = mongoose.model("crafts", craftSchema);
+
 let crafts = [];
 
-    //Fetch all the crafts in Mongo and add them to the Array
-    Craft.find({}) // Use find() without a callback
+//Fetch all the crafts in Mongo and add them to the Array
+Craft.find({}) // Use find() without a callback
     .then(documents => {
         // Iterate over the array of documents
         documents.forEach(doc => {
@@ -58,7 +58,7 @@ let crafts = [];
                 description: doc.description,
                 supplies: doc.supplies
             });
-        });        
+        });
     })
     .catch(err => {
         console.error('DB Error retrieving crafts:', err);
@@ -66,48 +66,106 @@ let crafts = [];
     });
 
 app.post("/api/crafts", upload.single("image"), (req, res) => {
-    const filename = req.file.filename
-    console.log("Recieved POST");
-    console.log(req.body);
-    req.body["image"] = filename;
+    let filename; // Declare filename variable here
+    const suppliesArray = req.body.supplies.split(',').map(item => item.trim());
+    req.body.supplies = suppliesArray;
+    
+
+    if (req.body.imgsrc !== "") {
+        // If imgsrc is not empty, set filename to imgsrc
+        filename = req.body.imgsrc;
+    } else {
+        // If imgsrc is empty, check if a file is uploaded
+        if (req.file && req.file.filename) {
+            filename = req.file.filename;
+        } else {
+            // If neither imgsrc nor file is available, handle this condition accordingly
+            console.log("Neither imgsrc nor file is available");
+            res.status(400).send("Neither imgsrc nor file is available");
+            return;
+        }
+    }
+
+    // Throw away imgsrc, it's a placeholder
+    delete req.body.imgsrc;
+    filename = extractFilename(filename);
+
+    console.log("Received POST");
+    console.log("Filename: " + filename);
+
+    // Update req.body.image with the value of filename
+    req.body.image = filename;
+
+    console.log("Req.body: ", req.body);
+
+    // Validate the craft data
     const result = validateCraft(req.body);
     if (result.error) {
+        // Handle validation error
         res.status(400).send("Improper validation of payload " + result.error.details[0].message);
         return;
     }
+    const supplyString = req.body.supplies;
+    if (!Array.isArray(supplyString)) {
+        const supplyArray = supplyString.split(",");
+        req.body.supplies = supplyArray;
+    }   
 
-    const newCraft = {
-        id: crafts.length + 1,
-        name: req.body.name,
-        image: req.body.image,
-        description: req.body.description,
-        supplies: req.body.supplies.split(",")
-    };
+    // Check if _id is not -1, if so, update the existing craft
+    if (req.body._id !== "-1") {
+        
+        Craft.findOneAndUpdate(
+            { _id: req.body._id },
+            { $set: req.body },
+            { new: true }
+        )
+            .then(updatedCraft => {
+                if (updatedCraft) {
+                    console.log("Craft updated successfully");
+                    res.send(updatedCraft);
+                } else {
+                    console.log("Craft not found for updating");
+                    res.status(404).send("Craft not found for updating");
+                }
+            })
+            .catch(error => {
+                console.error('DB Error updating craft:', error);
+                res.status(500).send('DB Error updating craft');
+            });
+    } else {
+        // If _id is -1, save a new craft to the database
+        const newCraft = {
+            name: req.body.name,
+            image: req.body.image,
+            description: req.body.description,
+            supplies: req.body.supplies
+        };
 
-    const newCraftDB = new Craft({
-        id: crafts.length + 1,
-        name: req.body.name,
-        image: req.body.image,
-        description: req.body.description,
-        supplies: req.body.supplies.split(",")
-    });
-
-    // Save the new craft document to the database
-    newCraftDB.save()
-        .then(() => {
-            crafts.push(newCraft);
-            res.send(newCraft);
-        })
-        .catch(error => {
-            console.error('DB Error creating craft:', error);
-            res.status(500).send('DB Error creating craft');
-        });
-
+        const newCraftDB = new Craft(newCraft);
+        newCraftDB.save()
+            .then(savedCraft => {
+                console.log("Craft saved successfully");
+                res.send(savedCraft);
+            })
+            .catch(error => {
+                console.error('DB Error creating craft:', error);
+                res.status(500).send('DB Error creating craft');
+            });
+    }
 });
+
+
+function extractFilename(url) {
+    // Split the URL by forward slashes
+    const parts = url.split('/');
+    // Get the last part (which should be the filename)
+    const filename = parts[parts.length - 1];
+    return filename;
+}
 
 const validateCraft = (craft) => {
     const schema = Joi.object({
-        id: Joi.allow(""),
+        _id: Joi.allow(""),
         name: Joi.string().min(3).required(),
         image: Joi.string().min(5).required(),
         description: Joi.string().min(1).required(),
@@ -117,8 +175,25 @@ const validateCraft = (craft) => {
 }
 
 app.get("/api/crafts", (req, res) => {
-    console.log("/api/crafts/ called. Returning json");
-    res.json(crafts);
+    // Fetch all the crafts from MongoDB
+    Craft.find({})
+        .then(documents => {
+            // Map each document to the desired format
+            const crafts = documents.map(doc => ({
+                id: doc._id,
+                name: doc.name,
+                image: doc.image,
+                description: doc.description,
+                supplies: doc.supplies
+            }));
+            // Respond with the fetched crafts data
+            res.json(crafts);
+        })
+        .catch(err => {
+            console.error('DB Error retrieving crafts:', err);
+            // Handle error
+            res.status(500).send('DB Error retrieving crafts');
+        });
 });
 
 app.listen(3002, () => {

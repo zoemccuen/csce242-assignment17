@@ -32,6 +32,11 @@ class Craft {
         */
         const craftProject = document.createElement("section");
         craftProject.classList.add("craft-card"); // Flex container for top portion
+        const recId = this.id;
+
+        // Set custom data attribute to the mongoDB primary key.
+        craftProject.setAttribute("data-rec-id", recId);
+
         const target = "modal-" + this.id;
 
         // Make the photo of the craft - to the right and is 300px
@@ -44,7 +49,6 @@ class Craft {
         return craftProject;
     }
 
-    
     get expandedSection() {
         const craftDetailCard = document.createElement("section");
         const target = "modal-" + this.id
@@ -58,7 +62,6 @@ class Craft {
 
         /* Add the next div which will contain the Content of the modal */
         const contentDiv = document.createElement("div");
-        // contentDiv.classList.add("w3-container");
 
         /* Add Close Button for Modal */
         const closeButton = document.createElement("span");
@@ -74,26 +77,46 @@ class Craft {
         /* Create an image element for the craft project */
         const craftPhoto = document.createElement("img");
         craftPhoto.src = this.image;
+        craftPhoto.id = "img-" + this.id;
         craftPhoto.classList.add("craft-photo-small");
 
         /* Create header for the title */
-        const heading = document.createElement("h2");
+        const heading = document.createElement("span");
         heading.classList.add("craft-details-header");
+        heading.id = "header-" + this.id;
         heading.innerText = this.name;
 
-        const dLink = document.createElement("a");
-        dLink.innerHTML = "	&#9249;";
-        craftDetails.append(dLink);
-        dLink.id = "delete-link";
+        /* Add Edit button */
+        const editIcon = document.createElement("img");
+        const editTarget = this.id;
+        editIcon.src = "images/icon-edit.png";
+        editIcon.classList.add("icons");
+        editIcon.id = "edit-" + this.id;
+        editIcon.onclick = () => { editCraft(editTarget); };
+
+        /* Add Delete button */
+        const deleteIcon = document.createElement("img");
+        const deleteTarget = this.id;
+        deleteIcon.src = "images/icon-delete.png";
+        deleteIcon.classList.add("icons");
+        deleteIcon.id = "edit-" + this.id;
+        deleteIcon.onclick = () => { deleteCraft(deleteTarget); };
+
+        /*Add the icons to the header */
+        heading.appendChild(editIcon);
+        heading.appendChild(deleteIcon);
 
         /* Create the text div and elements */
         const craftDetails = document.createElement("p");
+        craftDetails.classList.add("wordwrap");
         let craftText = "";
-        craftText += "<p>" + this.description + "</p>";
+        craftText += "<p id='" + "desc-" + this.id + "'>" + this.description + "</p>";
         craftText += "<p><h3>Supplies Needed</h3></p>";
-        craftText += "<ul>";
+        craftText += "<ul id='slist-" + this.id + "'>";
+        let supplyIndex = 0;
         this.supplies.forEach((craftSupply) => {
-            craftText += "<li>" + toTitleCase(craftSupply) + "</li>";
+            supplyIndex++;
+            craftText += "<li id='" + this.id + "-" + supplyIndex + "'>" + toTitleCase(craftSupply) + "</li>";
         });
         craftText += "</li>";
 
@@ -122,8 +145,11 @@ const modalOpen = (theName) => {
 }
 
 const modalClose = (theName) => {
-    const theForm = document.getElementById("add-crafts-form");
-    theForm.reset();
+    if (!theName.includes("modal")) {
+        const theForm = document.getElementById("add-crafts-form");
+        theForm.reset();
+    }
+    clearCraftTable();
     document.getElementById("img-prev").src = "";
     document.getElementById(theName).style.display = "none";
 }
@@ -152,6 +178,7 @@ const addSupplies = () => {
     const currentSupplies = suppliesTable.querySelectorAll("input.short-input");
     const lastRow = document.getElementById("add-supplies");
     let supplyCount = currentSupplies.length;
+
     if (currentSupplies[supplyCount - 1].value !== "") {
         const newRow = document.createElement("tr");
         let newSupplyData = "<td class='right'>&nbsp;</td>";
@@ -162,11 +189,85 @@ const addSupplies = () => {
         // Check if lastRow is a direct child of suppliesTable
         if (lastRow.parentNode === suppliesTable.querySelector("tbody")) {
             suppliesTable.querySelector("tbody").insertBefore(newRow, lastRow);
-            document.getElementById("supplies-0").value = "";
         } else {
             console.error("Error: lastRow is not a direct child of suppliesTable.");
         }
     }
+}
+
+const deleteCraft = (recId) => {
+    alert("This would normally delete craft project ID:" + recId);
+}
+
+const editCraft = (recId) => {
+    // Because the modalClose function resets the input form, we need to call it before we begin populating the form 
+    modalClose("modal-" + recId);
+
+    // Set the _id to the record ID so that the handler knows this is NOT a new record. It's -1 otherwise 
+    document.getElementById("craft-id").value = recId;
+
+    // Get the contents of the view modal - we'll copy it to the input form from the add-a-craft section //
+    const craftName = document.getElementById("header-" + recId).innerText;
+    const craftDesc = document.getElementById("desc-" + recId).innerText;
+    const craftSupplies = document.getElementById("slist-" + recId);
+    const craftImage = document.getElementById("img-" + recId).src;
+    let supplyCount = 0;
+    let supplyArray = [];
+
+    console.log(craftName + "\n" + craftDesc + "\n" + craftImage);
+    if (craftSupplies) {
+        // Get all list items within the unordered list
+        const listItems = craftSupplies.getElementsByTagName("li");
+        supplyCount = listItems.length;
+        // Iterate through each list item and extract inner HTML
+        for (let i = 0; i < listItems.length; i++) {
+            const innerText = listItems[i].innerText;
+            supplyArray.push(innerText);
+            console.log(innerText);
+        }
+    } else {
+        console.log("Craft supplies list is empty.");
+    }
+
+    const theForm = document.getElementById("add-crafts-form");
+    const suppliesTable = document.getElementById("supplies-section");
+    const currentSupplies = suppliesTable.querySelectorAll("input.short-input");
+    const lastRow = document.getElementById("add-supplies");
+
+    document.getElementById("img-prev").src = craftImage;
+    document.getElementById("craft-name").value = craftName;
+    document.getElementById("craft-desc").value = craftDesc;
+    document.getElementById("imgexisting").value = craftImage;
+
+    for (let i = 0; i < supplyCount; i++) {
+        const newRow = document.createElement("tr");
+        let newSupplyData = "<td class='right'>&nbsp;</td>";
+        newSupplyData += "<td class='left'>";
+        newSupplyData += "<input class='short-input' type='text' id='supplies-" + (i + 1) + "' name='supplies-" + (i + 1) + "' ";
+        newSupplyData += " value='" + supplyArray[i] + "' required /></td></tr>";
+        newRow.innerHTML = newSupplyData;
+        // Check if lastRow is a direct child of suppliesTable
+
+        if (lastRow.parentNode === suppliesTable.querySelector("tbody")) {
+            suppliesTable.querySelector("tbody").insertBefore(newRow, lastRow);
+            document.getElementById("supplies-0").value = "";
+        } else {
+            console.error("Error: lastRow is not a direct child of suppliesTable.");
+        }
+
+    }
+    modalOpen("add-craft");
+
+}
+
+// Empty out the card that held the craft projects
+const clearCraftTable = () => {
+    const theTable = document.getElementById('supplies-section');
+    let tableHTML = '<thead></thead><tbody><tr id="add-supplies"><td class="right">Supplies</td>';
+    tableHTML += '<td class="left"><input class="short-input" type="text" id="supplies-0" name="supplies-0" required />';
+    tableHTML += '<button id="add-supply" type="button">Add Supply</button></td></tr></tbody>';
+    theTable.innerHTML = tableHTML;
+    document.getElementById("add-supply").onclick = () => { addSupplies(); };
 }
 
 const initGallery = async () => {
@@ -174,14 +275,9 @@ const initGallery = async () => {
     const imgPrev = document.getElementById('img-prev');
     let craftArray = await loadCraft();
     let photoGallery = document.getElementById("craft-section");
-    const theTable = document.getElementById('supplies-section');
 
-    let tableHTML = '<thead></thead><tbody><tr id="add-supplies"><td class="right">Supplies</td>';
-    tableHTML += '<td class="left"><input class="short-input" type="text" id="supplies-0" name="supplies-0" required />';
-    tableHTML += '<button id="add-supply" type="button">Add Supply</button></td></tr></tbody>';
+    clearCraftTable();
 
-    theTable.innerHTML = tableHTML;
-    
     if (craftArray !== undefined && craftArray.length > 0) {
         craftArray.forEach((aCraft) => {
             photoGallery.append(aCraft.renderCraft);
@@ -191,10 +287,7 @@ const initGallery = async () => {
     document.getElementById("icon-add").onclick = () => { modalOpen("add-craft"); };
     document.getElementById("add-craft-cancel").onclick = () => { modalClose("add-craft"); };
     document.getElementById("add-supply").onclick = () => { addSupplies(); };
-    document.getElementById("icon-pencil").onclick = () => { editCraft("&#9999"); };
-    document.getElementById("icon-delete").onclick = () => { deleteCraft("&#10005"); };
     document.getElementById("add-crafts-form").reset();
-    dLink.onclick = deleteCraft.bind(this, craft);
     document.getElementById("img-prev").src = "";
 
     fileInput.addEventListener('change', function () {
@@ -232,30 +325,13 @@ const addEditCraft = async (e) => {
     initGallery();
 }
 
-const deleteCraft = async(craft)=> {
-    let response = await fetch(`/api/crafts/${craft._id}`, {
-      method:"DELETE",
-      headers:{
-        "Content-Type":"application/json;charset=utf-8"
-      }
-    });
-  
-    if(response.status != 200){
-      console.log("Error deleting");
-      return;
-    }
-  
-    let result = await response.json();
-    resetForm();
-    showCrafts();
-    document.getElementById("dialog").style.display = "none";
-  };
-
 const getSupplies = () => {
     const inputs = document.querySelectorAll("#supplies-section input");
     const supplies = [];
     inputs.forEach((input) => {
-        supplies.push(input.value);
+        if (input.value != "") {
+            supplies.push(input.value);
+        }
     });
 
     return supplies;

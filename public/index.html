@@ -2,7 +2,7 @@
 <html lang="eng">
 
 <head>
-    <title>Assignment 15</title>
+    <title>Assignment 17</title>
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="styles.css" />
     <script src="script.js"></script>
@@ -16,39 +16,47 @@
     <main>
         <div id="add-craft" class="add-craft-dialog w3-modal hidden">
             <div class="add-craft-info w3-modal-content">
-                <span onclick="modalClose('add-craft')" class="w3-button w3-display-topright">&times;</span>
+                <span onclick="modalClose('add-craft')"
+                    class="w3-button w3-display-topright">&times;</span>
                 <div id="dialog-details" class="dialog-details">
                     <form id="add-crafts-form" method="POST" class="input-form">
+                        <input type="hidden" id="craft-id" name="_id" value="-1" />
                         <div id="img-prev-section" class="image-preview-section">
                             <p>
-                                <img id="img-prev" class="image-preview">
-                                <input type="button" id="load-image" value="Upload An Image"
-                                    onclick="document.getElementById('file-button').click();" />
-                                <input type="file" style="display:none;" id="file-button" name="image"
-                                    accept="image/*" />
+                                <img id="img-prev" class="image-preview">                                
+                                <input type="hidden" id="imgexisting" name="imgsrc" value="" />
+                                <input type="button" id="load-image" value="Upload An Image" onclick="document.getElementById('file-button').click();" />
+                                <input type="file" style="display:none;" id="file-button" name="image" accept="image/*"/>                                
                             </p>
                         </div>
                         <div id="craft-form-input" class="craft-form-section">
                             <table id="supplies-table">
                                 <thead>
                                     <tr>
-                                        <td colspan="2" class="input-header">Changes To Your Craft</td>
-                                    </tr>
+                                        <td colspan="2" class="input-header">Changes To Your Craft</td></tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td class="right">Name</td>
-                                        <td class="left"><input class="full-input" type="text" name="name" required />
-                                        </td>
+                                        <td class="left"><input class="full-input" type="text" id="craft-name" name="name" required /></td>
                                     </tr>
                                     <tr>
                                         <td class="right">Description</td>
-                                        <td class="left"><textarea name="description" required></textarea></td>
+                                        <td class="left"><textarea name="description" id="craft-desc" required></textarea></td>
                                     </tr>
                                 </tbody>
-                            </table>
-                            <table id="supplies-section">
-                            </table>
+                                </table>
+                                <table id="supplies-section">
+                                    <thead></thead>
+                                    <tbody>
+                                    <tr id="add-supplies">
+                                        <td class="right">Supplies</td>
+                                        <td class="left"><input class="short-input" type="text" id="supplies-0" name="supplies-0" required />
+                                            <button id="add-supply" type="button">Add Supply</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>                            
                             </p>
                             <p>
                                 <button id="add-craft-cancel" type="reset">Cancel</button>
