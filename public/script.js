@@ -196,7 +196,7 @@ const addSupplies = () => {
 }
 
 const deleteCraft = (recId) => {
-    alert("This would normally delete craft project ID:" + recId);
+    alert("Are you sure you want to delete?");
 }
 
 const editCraft = (recId) => {
