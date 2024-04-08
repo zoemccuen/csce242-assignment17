@@ -99,8 +99,10 @@ class Craft {
         const deleteTarget = this.id;
         deleteIcon.src = "images/icon-delete.png";
         deleteIcon.classList.add("icons");
-        deleteIcon.id = "edit-" + this.id;
-        deleteIcon.onclick = () => { deleteCraft(deleteTarget); };
+        deleteIcon.id = "delete-" + this.id;
+        deleteIcon.onclick = () => { document.getElementById("confirmationDialog").showModal(); }       
+        const deleteButton = document.getElementById("deleteButton");
+        deleteButton.onclick = () => {deleteCraft(deleteTarget); };
 
         /*Add the icons to the header */
         heading.appendChild(editIcon);
@@ -196,7 +198,41 @@ const addSupplies = () => {
 }
 
 const deleteCraft = (recId) => {
-    alert("Are you sure you want to delete?");
+    const url = "https://csce242-assignment17-iox5.onrender.com/api/delete";
+
+    console.log("Deleting Craft ID:" + recId);
+    const data = { _id: recId };
+
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    };
+  
+    // Send the POST request
+    fetch("/api/delete", options)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log("Delete request successful:", data);
+        // Handle response data if needed
+      })
+      .catch(error => {
+        console.error("Error sending delete request:", error);
+        // Handle errors
+      });
+  
+    const confirmationDialog = document.getElementById("confirmationDialog");
+    confirmationDialog.close();
+    modalClose("modal-" + recId);
+    document.getElementById("craft-section").innerHTML = "";
+    initGallery();
 }
 
 const editCraft = (recId) => {
@@ -223,7 +259,7 @@ const editCraft = (recId) => {
         for (let i = 0; i < listItems.length; i++) {
             const innerText = listItems[i].innerText;
             supplyArray.push(innerText);
-            console.log(innerText);
+            console.log(i + " " + innerText);
         }
     } else {
         console.log("Craft supplies list is empty.");
@@ -239,23 +275,26 @@ const editCraft = (recId) => {
     document.getElementById("craft-desc").value = craftDesc;
     document.getElementById("imgexisting").value = craftImage;
 
-    for (let i = 0; i < supplyCount; i++) {
-        const newRow = document.createElement("tr");
-        let newSupplyData = "<td class='right'>&nbsp;</td>";
-        newSupplyData += "<td class='left'>";
-        newSupplyData += "<input class='short-input' type='text' id='supplies-" + (i + 1) + "' name='supplies-" + (i + 1) + "' ";
-        newSupplyData += " value='" + supplyArray[i] + "' required /></td></tr>";
-        newRow.innerHTML = newSupplyData;
-        // Check if lastRow is a direct child of suppliesTable
+    for (let i = 0; i < supplyCount - 1; i++) {
+        if (supplyCount > 0) {
+            const newRow = document.createElement("tr");
+            let newSupplyData = "<td class='right'>&nbsp;</td>";
+            newSupplyData += "<td class='left'>";
+            newSupplyData += "<input class='short-input' type='text' id='supplies-" + (i + 1) + "' name='supplies-" + (i + 1) + "' ";
+            newSupplyData += " value='" + supplyArray[i] + "' required /></td></tr>";
+            newRow.innerHTML = newSupplyData;
+            // Check if lastRow is a direct child of suppliesTable
 
-        if (lastRow.parentNode === suppliesTable.querySelector("tbody")) {
-            suppliesTable.querySelector("tbody").insertBefore(newRow, lastRow);
-            document.getElementById("supplies-0").value = "";
-        } else {
-            console.error("Error: lastRow is not a direct child of suppliesTable.");
+            if (lastRow.parentNode === suppliesTable.querySelector("tbody")) {
+                suppliesTable.querySelector("tbody").insertBefore(newRow, lastRow);
+            } else {
+                console.error("Error: lastRow is not a direct child of suppliesTable.");
+            }
         }
-
     }
+    document.getElementById("supplies-0").value = supplyArray[supplyCount - 1];
+
+
     modalOpen("add-craft");
 
 }
@@ -346,4 +385,11 @@ window.onload = () => {
         });
         document.getElementById("add-crafts-form").onsubmit = addEditCraft;
     }
+
+
+    const cancelButton = document.getElementById('cancelButton');
+    cancelButton.addEventListener('click', () => {
+        confirmationDialog.close();
+    });
+
 }

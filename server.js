@@ -23,6 +23,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+
 mongoose
     .connect(
         "mongodb+srv://zoelenore:1415Birchave!@assignment15.dg9dui2.mongodb.net/hw17?retryWrites=true&w=majority&appName=assignment15")    .then(() => console.log("Connected to mongodb..."))
@@ -65,11 +66,29 @@ Craft.find({}) // Use find() without a callback
         // Handle error
     });
 
+app.post('/api/delete', (req, res) => {
+    const recId = req.body._id;
+    console.log(req.body);
+    Craft.findOneAndDelete({ _id: recId  })
+        .then(deletedCraft => {
+            if (!deletedCraft) {
+                return res.status(404).json({ message: 'Craft not found for deletion' });
+            }
+            res.status(200).json({ message: 'Craft deleted successfully', deletedCraft });
+        })
+        .catch(error => {
+            console.error('Error deleting craft:', error);
+            res.status(500).json({ message: 'Error deleting craft' });
+        });
+
+    console.log("Delete Record ID: " + recId);
+});
+
 app.post("/api/crafts", upload.single("image"), (req, res) => {
     let filename; // Declare filename variable here
     const suppliesArray = req.body.supplies.split(',').map(item => item.trim());
     req.body.supplies = suppliesArray;
-    
+
 
     if (req.body.imgsrc !== "") {
         // If imgsrc is not empty, set filename to imgsrc
@@ -109,11 +128,11 @@ app.post("/api/crafts", upload.single("image"), (req, res) => {
     if (!Array.isArray(supplyString)) {
         const supplyArray = supplyString.split(",");
         req.body.supplies = supplyArray;
-    }   
+    }
 
     // Check if _id is not -1, if so, update the existing craft
     if (req.body._id !== "-1") {
-        
+
         Craft.findOneAndUpdate(
             { _id: req.body._id },
             { $set: req.body },

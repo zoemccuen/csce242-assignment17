@@ -14,6 +14,12 @@
         <span class="top-title">Buy and Sell Crafts<img id="icon-add" src="images/icon-add.png" class="icons"></span>
     </header>
     <main>
+        <dialog id="confirmationDialog">
+            <p>Are you sure you want to delete this craft?</p>
+            <button id="cancelButton">Cancel</button>
+            <button id="deleteButton">Delete</button>
+          </dialog>
+          
         <div id="add-craft" class="add-craft-dialog w3-modal hidden">
             <div class="add-craft-info w3-modal-content">
                 <span onclick="modalClose('add-craft')"
