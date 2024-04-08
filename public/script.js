@@ -247,7 +247,7 @@ const deleteCraft = async(craft)=> {
   
     let result = await response.json();
     resetForm();
-    showRecipes();
+    showCrafts();
     document.getElementById("dialog").style.display = "none";
   };
 
